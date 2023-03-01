@@ -119,6 +119,9 @@ for i in range(3):
 # Open Creofile
 c.connect()
 c.file_open(file_="sample.prt", dirname="working", display=True, activate=True)
+
+# TODO this is where I am currently blocked. I am not able to get the spline dimensions or features
+# TODO to be able to edit it.
 c.view_list("sample.prt")  # ['BACK', 'BOTTOM', 'DEFAULT', 'FRONT', 'LEFT', 'RIGHT', 'TOP']
 c.view_activate("DEFAULT")
 features = c.feature_list(inc_unnamed=True)  # Gives the curve feat_id=40
