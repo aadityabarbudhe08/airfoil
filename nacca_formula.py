@@ -118,11 +118,28 @@ for i in range(3):
 
 # Open Creofile
 c.connect()
-c.file_open(file_="sample.prt", dirname="working", display=True, activate=True)
-c.view_list("sample.prt")  # ['BACK', 'BOTTOM', 'DEFAULT', 'FRONT', 'LEFT', 'RIGHT', 'TOP']
-c.view_activate("DEFAULT")
-features = c.feature_list(inc_unnamed=True)  # Gives the curve feat_id=40
+c.file_open(file_="splineTest.prt", dirname="working", display=True, activate=True)
 
+# TODO this is where I am currently blocked. I am not able to get the spline dimensions or features
+# TODO to be able to edit it.
+
+# View functions
+c.view_list("splineTest.prt")  # ['BACK', 'BOTTOM', 'DEFAULT', 'FRONT', 'LEFT', 'RIGHT', 'TOP']
+c.view_activate("DEFAULT")
+
+# Feature list functions
+features = c.feature_list(inc_unnamed=True)  # Gives the curve feat_id=40
+feature_param = c.feature_list_params(inc_unnamed=True)
+
+# Geometry functions
+surfaces = c.geometry_get_surfaces()
+surfaces_edges = c.geometry_get_edges(57)
+
+# Dimension functions
+dimesion_list = c.dimension_list()
+parameter_list = c.parameter_list()
+
+# Debug point
 print("test")
 
 # Close PTC Creo
