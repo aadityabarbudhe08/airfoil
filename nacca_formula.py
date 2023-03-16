@@ -1,5 +1,5 @@
 import time
-
+import re
 import numpy as np
 import creopyson
 import os
@@ -70,9 +70,10 @@ def naca4(code, n_points):
     # Save top and bottom generated co-ordinates to respective files.
     static_value = np.full(x.shape, 0)
     top_camber_line = np.column_stack((xu, yu, static_value))
-    np.savetxt("top_camber_line.pts", top_camber_line, fmt='%.5f')
+    np.savetxt("top_camber_line.pts", top_camber_line, fmt='%.5f')  # TODO remove this later
     bottom_camber_line = np.column_stack((xl, yl, static_value))
-    np.savetxt("bottom_camber_line.pts", bottom_camber_line, fmt='%.5f')
+    np.savetxt("bottom_camber_line.pts", bottom_camber_line, fmt='%.5f')  # TODO remove this later
+    return top_camber_line, bottom_camber_line
 
 
 def parse_data(raw_data):
@@ -98,7 +99,7 @@ def parse_data(raw_data):
 
 # Create the points
 # naca4(input("What four digits would you like for the profile?"), int(input("What density of points would you like?")))
-naca4("2412", 1000)
+top, bottom = naca4("2412", 11)
 
 # Initialize creopyson Client and start PTC creo
 c = creopyson.Client()
@@ -118,26 +119,50 @@ for i in range(3):
 
 # Open Creofile
 c.connect()
-c.file_open(file_="splineTest.prt", dirname="working", display=True, activate=True)
+prt_file = "template_spline.prt"
+c.file_open(file_=prt_file, dirname="working", display=True, activate=True)
 
 # TODO this is where I am currently blocked. I am not able to get the spline dimensions or features
 # TODO to be able to edit it.
 
 # View functions
-c.view_list("splineTest.prt")  # ['BACK', 'BOTTOM', 'DEFAULT', 'FRONT', 'LEFT', 'RIGHT', 'TOP']
-c.view_activate("DEFAULT")
+c.view_list(prt_file)  # ['BACK', 'BOTTOM', 'DEFAULT', 'FRONT', 'LEFT', 'RIGHT', 'TOP']
+c.view_activate("FRONT")
 
-# Feature list functions
-features = c.feature_list(inc_unnamed=True)  # Gives the curve feat_id=40
-feature_param = c.feature_list_params(inc_unnamed=True)
-
-# Geometry functions
-surfaces = c.geometry_get_surfaces()
-surfaces_edges = c.geometry_get_edges(57)
-
-# Dimension functions
-dimesion_list = c.dimension_list()
+# Parameter functions
 parameter_list = c.parameter_list()
+
+# Iterate to fill in top camber-line coordinates.
+for i in range(9):
+    # Set X coordinate of the point
+    x_coordinate_value = top[i+1][0]
+    spline_x_coordinate_value = "TP" + str(i+1) + "_X"
+    c.parameter_set(spline_x_coordinate_value, value=x_coordinate_value, designate=True, type_="DOUBLE")
+
+    # Set Y coordinate of the point
+    y_coordinate_value = top[i+1][1]
+    spline_y_coordinate_value = "TP" + str(i+1) + "_Y"
+    c.parameter_set(spline_y_coordinate_value, value=y_coordinate_value, designate=True, type_="DOUBLE")
+
+# Iterate to fill in bottom camber-line coordinates.
+for i in range(9):
+    # Set X coordinate of the point
+    x_coordinate_value = bottom[i+1][0]
+    spline_x_coordinate_value = "BP" + str(i+1) + "_X"
+    c.parameter_set(spline_x_coordinate_value, value=x_coordinate_value, designate=True, type_="DOUBLE")
+
+    # Set Y coordinate of the point
+    y_coordinate_value = bottom[i+1][1]*-1
+    spline_y_coordinate_value = "BP" + str(i+1) + "_Y"
+    c.parameter_set(spline_y_coordinate_value, value=y_coordinate_value, designate=True, type_="DOUBLE")
+
+# TODO remove once testing is done
+parameter_list_after_change = c.parameter_list()
+
+c.file_refresh()
+c.file_regenerate()
+
+# TODO add a call to save file with a new name.
 
 # Debug point
 print("test")
